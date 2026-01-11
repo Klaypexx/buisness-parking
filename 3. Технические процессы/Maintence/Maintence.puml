@@ -1,0 +1,361 @@
+@startuml
+title Сервис Парковки - Maintenance & Deployment Processes
+
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+' === DEPLOYMENT PIPELINE ===
+card "Deployment Pipeline (CI/CD)" {
+  card "Разработка" as dev_stage {
+    card "GitLab Repository" as gitlab
+    card "Code Review" as code_review
+    card "Feature Flags" as feature_flags
+    card "Dependency Updates" as dep_updates
+  }
+  
+  card "CI Процесс" as ci_stage {
+    card "Docker Build" as docker_build
+    card "Unit Tests (xUnit/Jest)" as unit_tests
+    card "Integration Tests" as int_tests
+    card "Security Scan" as sec_scan
+    card "Performance Tests (k6)" as perf_tests
+    card "Container Registry" as container_reg
+  }
+  
+  card "Staging Environment" as staging_stage {
+    card "Auto-Deploy to Staging" as staging_deploy
+    card "E2E Tests (Detox)" as e2e_tests
+    card "API Contract Tests" as api_tests
+    card "Load Testing" as load_test
+    card "Security Penetration Test" as pen_test
+  }
+  
+  card "Production Deployment" as prod_stage {
+    card "Canary Release (API Gateway)" as canary
+    card "Blue-Green (Payment Service)" as blue_green
+    card "Rolling Update (Core Services)" as rolling
+    card "Database Migrations" as db_migrations
+    card "Feature Rollout" as feature_rollout
+  }
+}
+
+' === КОММЕНТАРИИ ДЛЯ DEPLOYMENT PIPELINE ===
+note right of gitlab
+  <b>Git Workflow</b>
+  • Main branch защищен
+  • Feature branches
+  • MR/PR нужны 2 подтверждения
+  • Семантическое версионирование
+end note
+
+note left of code_review
+  <b>Процесс Code Review</b>
+  • Проверка архитектуры
+  • Тестовое покрытие
+  • Безопасность кода
+  • Соответствие стандартам
+end note
+
+note right of docker_build
+  <b>Сборка контейнеров</b>
+  • Мульти-стадийные сборки
+  • Уменьшение размера образов
+  • Сканирование на уязвимости
+  • Тегирование по версиям
+end note
+
+note left of staging_deploy
+  <b>Staging Environment</b>
+  • Полная копия Production
+  • Тестовые данные
+  • Автоматические деплои
+  • Предпродакшн тестирование
+end note
+
+note right of canary
+  <b>Canary Deployment</b>
+  • 5% трафика → 25% → 50% → 100%
+  • Мониторинг метрик 30 минут
+  • Автооткат при проблемах
+  • Используется для API Gateway
+end note
+
+note left of blue_green
+  <b>Blue-Green Deployment</b>
+  • Только для Payment Service
+  • PCI DSS требования
+  • Мгновенное переключение
+  • Полное тестирование Green
+end note
+
+note right of rolling
+  <b>Rolling Update</b>
+  • Основные сервисы (Search, Booking)
+  • maxUnavailable: 1
+  • Grace period: 30 секунд
+  • Health checks перед продвижением
+end note
+
+' === MONITORING DURING DEPLOYMENT ===
+card "Мониторинг при деплое" {
+  card "Pre-Deployment Checks" as pre_checks
+  card "Deployment Metrics Dashboard" as deploy_dashboard
+  card "Automated Rollback Triggers" as auto_rollback
+  card "Post-Deployment Verification" as post_deploy_check
+  card "Smoke Tests Auto-Run" as smoke_tests
+  card "User Experience Monitoring" as ux_monitoring
+}
+
+note right of pre_checks
+  <b>Проверки перед деплоем</b>
+  • Health всех зависимостей
+  • Достаточно ресурсов в кластере
+  • Нет активных инцидентов
+  • Error budget позволяет деплой
+end note
+
+note left of deploy_dashboard
+  <b>Дашборд деплоя</b>
+  • Real-time метрики
+  • Сравнение до/после
+  • Error rate, latency, throughput
+  • Бизнес метрики (бронирования)
+end note
+
+note right of auto_rollback
+  <b>Автоматический откат</b>
+  Триггеры:
+  • Error rate > 1% (2 минуты)
+  • Latency P95 > 500ms
+  • Health check failures > 30%
+  • Бизнес метрики упали > 10%
+end note
+
+note left of post_deploy_check
+  <b>Верификация после деплоя</b>
+  • Проверка всех health endpoints
+  • Ключевые пользовательские сценарии
+  • Интеграции с внешними сервисами
+  • Производительность под нагрузкой
+end note
+
+' === MONITORING & OBSERVABILITY ===
+card "Мониторинг и наблюдаемость" {
+  card "Prometheus" as prometheus
+  card "Grafana Dashboards" as grafana
+  card "AlertManager" as alertmanager
+  card "Slack/Telegram" as notifications
+  card "Loki + FluentBit" as loki
+  card "Jaeger Tracing" as jaeger
+  card "UptimeRobot" as uptime
+}
+
+note right of prometheus : <b>Сбор метрик</b>\n• 15-секундный интервал\n• 30 дней хранения\n• 500+ метрик\n• Кастомные бизнес-метрики
+note left of grafana : <b>Дашборды и визуализация</b>\n• 15+ дашбордов\n• Real-time мониторинг\n• Бизнес и технические метрики\n• Автоматические отчеты
+note right of alertmanager : <b>Управление алертами</b>\n• 50+ правил алертинга\n• Группировка и дедупликация\n• Эскалация через 15 мин\n• Maintenance windows
+
+' === ЕЖЕДНЕВНЫЕ ПРОЦЕДУРЫ ===
+card "Ежедневные процедуры" {
+  card "Проверка алертов (9:00)" as daily_alerts
+  card "Анализ логов" as log_analysis
+  card "Проверка метрик" as metrics_check
+  card "Бэкапы БД" as daily_backups
+  card "Проверка деплоев" as deploy_review
+  card "Очистка кэша" as cache_cleanup
+}
+
+note right of deploy_review : <b>Обзор деплоев за сутки</b>\n• Успешные/неудачные деплои\n• Влияние на метрики\n• Проблемы при развертывании\n• Оптимизация процесса
+
+' === ЕЖЕНЕДЕЛЬНЫЕ ПРОЦЕДУРЫ ===
+card "Еженедельные процедуры" {
+  card "Анализ производительности" as perf_analysis
+  card "Проверка безопасности" as security_check
+  card "Ротация логов" as log_rotation
+  card "Обновление зависимостей" as deps_update
+  card "Deployment Retrospective" as deploy_retro
+  card "Capacity planning" as capacity_weekly
+}
+
+note left of deploy_retro : <b>Ретроспектива деплоев</b>\n• Анализ успешности\n• Время от коммита до продакшн\n• Частота деплоев\n• Улучшение процесса
+
+' === ЕЖЕМЕСЯЧНЫЕ ПРОЦЕДУРЫ ===
+card "Ежемесячные процедуры" {
+  card "Аудит системы" as system_audit
+  card "Тестирование бэкапов" as backup_test
+  card "Обзор инцидентов" as incident_review
+  card "Deployment Process Audit" as deploy_audit
+  card "Обновление SSL сертификатов" as ssl_update
+  card "DR тренировки" as dr_drill
+}
+
+note right of deploy_audit : <b>Аудит процесса деплоя</b>\n• Соответствие best practices\n• Безопасность цепочки поставки\n• Эффективность автоматизации\n• Соответствие compliance
+
+' === АВТОМАТИЗАЦИЯ ===
+card "Автоматизация" {
+  card "GitOps (ArgoCD)" as gitops
+  card "Infrastructure as Code" as iac
+  card "Automated Testing" as auto_testing
+  card "Self-healing" as self_healing
+  card "Deployment Automation" as deploy_auto
+  card "Rollback Automation" as rollback_auto
+}
+
+note left of deploy_auto : <b>Автоматизация деплоев</b>\n• Автоматические canary продвижения\n• Blue-green переключения\n• Database migration automation\n• Feature flag management
+
+' === SERVICE LEVEL MANAGEMENT ===
+card "Управление уровнем сервиса" {
+  card "SLA 99.9% availability" as sla
+  card "SLO: Latency < 200ms" as slo_latency
+  card "SLO: Error rate < 0.1%" as slo_errors
+  card "Deployment SLOs" as deploy_slos
+  card "Error Budget tracking" as error_budget
+  card "Change Failure Rate" as change_failure
+}
+
+note right of deploy_slos : <b>SLO для деплоев</b>\n• Время деплоя < 30 минут\n• Success rate > 95%\n• Rollback time < 5 минут\n• MTTR при деплой-инцидентах
+
+' === ИНЦИДЕНТ МЕНЕДЖМЕНТ ===
+card "Управление инцидентами" {
+  card "Обнаружение" as incident_detect
+  card "Эскалация" as incident_escalate
+  card "Решение" as incident_resolve
+  card "Deployment Incidents" as deploy_incidents
+  card "Пост-мортем" as post_mortem
+  card "Предотвращение" as incident_prevent
+}
+
+note left of deploy_incidents : <b>Инцеденты при деплоях</b>\n• Мониторинг во время деплоев\n• Быстрая эскалация\n• Автоматические откаты\n• Анализ root cause
+
+' === СВЯЗИ ДЕПЛОЙ ПАЙПЛАЙНА ===
+
+' Разработка -> CI
+gitlab --> docker_build
+code_review --> docker_build
+feature_flags --> docker_build
+
+' CI -> Staging
+docker_build --> unit_tests
+unit_tests --> int_tests
+int_tests --> sec_scan
+sec_scan --> perf_tests
+perf_tests --> container_reg
+container_reg --> staging_deploy
+
+' Staging -> Production
+staging_deploy --> e2e_tests
+e2e_tests --> api_tests
+api_tests --> canary
+canary --> blue_green
+canary --> rolling
+blue_green --> db_migrations
+rolling --> feature_rollout
+
+' Мониторинг во время деплоя
+canary --> pre_checks
+blue_green --> pre_checks
+rolling --> pre_checks
+
+pre_checks --> deploy_dashboard
+deploy_dashboard --> auto_rollback
+auto_rollback --> post_deploy_check
+post_deploy_check --> smoke_tests
+smoke_tests --> ux_monitoring
+
+' === СВЯЗИ С МОНИТОРИНГОМ ===
+deploy_dashboard --> prometheus
+deploy_dashboard --> grafana
+ux_monitoring --> jaeger
+auto_rollback --> alertmanager
+
+' === СВЯЗИ ОБСЛУЖИВАНИЯ ===
+prometheus --> daily_alerts
+loki --> log_analysis
+grafana --> metrics_check
+deploy_review --> daily_alerts
+metrics_check --> perf_analysis
+deploy_retro --> perf_analysis
+
+' === СВЯЗИ АВТОМАТИЗАЦИИ ===
+gitops --> canary
+deploy_auto --> blue_green
+rollback_auto --> auto_rollback
+self_healing --> incident_resolve
+
+' === СВЯЗИ УРОВНЯ СЕРВИСА ===
+sla --> prometheus
+slo_latency --> grafana
+deploy_slos --> deploy_dashboard
+change_failure --> deploy_retro
+
+' === СВЯЗИ ИНЦИДЕНТОВ ===
+alertmanager --> incident_detect
+incident_detect --> deploy_incidents
+deploy_incidents --> incident_escalate
+auto_rollback --> incident_resolve
+post_mortem --> incident_prevent
+
+' === ДОПОЛНИТЕЛЬНЫЕ СВЯЗИ ===
+ssl_update --> notifications
+backup_test --> daily_backups
+dr_drill --> deploy_audit
+change_failure --> error_budget
+
+' === ПРИМЕРЫ ВРЕМЕНИ ВЫПОЛНЕНИЯ ===
+note bottom of canary
+  <b>Время деплоя Canary: 60-90 минут</b>
+  Этапы:
+  1. 5% трафика - 30 мин мониторинг
+  2. 25% трафика - 20 мин
+  3. 50% трафика - 20 мин
+  4. 100% трафика - 20 мин
+end note
+
+note bottom of blue_green
+  <b>Время деплоя Blue-Green: 120 минут</b>
+  Этапы:
+  1. Развертывание Green - 30 мин
+  2. Полное тестирование - 60 мин
+  3. Переключение трафика - 5 мин
+  4. Мониторинг после - 25 мин
+end note
+
+note bottom of deploy_review
+  <b>Утренний обзор деплоев: 9:00-9:30</b>
+  Проверка:
+  • Ночные деплои (2:00-6:00)
+  • Автоматические откаты
+  • Влияние на метрики
+  • Планы на день
+end note
+
+note bottom of deploy_retro
+  <b>Еженедельная ретроспектива: Пятница 16:00</b>
+  Участники: DevOps, разработчики, QA
+  Метрики:
+  • Количество деплоев
+  • Success rate
+  • Время восстановления
+  • Улучшения процесса
+end note
+
+' === ЛЕГЕНДА ПРОЦЕССОВ ДЕПЛОЯ ===
+legend right
+  | <b>Типы деплоев:</b> |
+  | <color:green>● Canary</color> - Постепенный |
+  | <color:blue>● Blue-Green</color> - Переключение |
+  | <color:orange>● Rolling Update</color> - Поочередный |
+  |
+  | <b>Критерии успеха:</b> |
+  | • Error rate < 0.1% |
+  | • Latency P95 < 200ms |
+  | • All health checks pass |
+  | • Бизнес метрики stable |
+  |
+  | <b>Автоматический откат:</b> |
+  | • Error rate > 1% |
+  | • Latency P95 > 500ms |
+  | • Health check failures |
+  | • Бизнес метрики drop |
+endlegend
+
+@enduml
